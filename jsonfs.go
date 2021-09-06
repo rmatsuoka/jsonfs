@@ -64,7 +64,7 @@ func (fsys *FS) Open(name string) (fs.File, error) {
 	return fs.File(&File{
 		name:   base,
 		value:  value,
-		reader: strings.NewReader(fmt.Sprint(value)),
+		reader: nil,
 		rootFS: fsys,
 		path:   name}), nil
 }

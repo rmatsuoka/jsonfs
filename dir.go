@@ -23,8 +23,5 @@ func (d *DirEntry) Type() fs.FileMode {
 }
 
 func (d *DirEntry) Info() (fs.FileInfo, error) {
-	if _, _, err := d.rootFS.namev(d.path); err != nil {
-		return nil, fs.ErrNotExist
-	}
-	return fs.FileInfo(d.info), nil
+	return fs.Stat(d.rootFS, d.path)
 }
