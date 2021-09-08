@@ -59,7 +59,7 @@ func (fsys *FS) namev(name string) (string, interface{}, error) {
 func (fsys *FS) Open(name string) (fs.File, error) {
 	base, value, err := fsys.namev(name)
 	if err != nil {
-		return nil, err
+		return nil, &fs.PathError{"open", name, err}
 	}
 	return fs.File(&File{
 		name:   base,
@@ -87,7 +87,7 @@ func join(dir, base string) string {
 func (fsys *FS) ReadDir(name string) ([]fs.DirEntry, error) {
 	_, value, err := fsys.namev(name)
 	if err != nil {
-		return nil, err
+		return nil, &fs.PathError{"readdir", name, err}
 	}
 
 	var dirs []fs.DirEntry
@@ -115,7 +115,7 @@ func (fsys *FS) ReadDir(name string) ([]fs.DirEntry, error) {
 				path:   join(name, base)})
 		}
 	default:
-		return nil, fmt.Errorf("is not directory")
+		return nil, &fs.PathError{"readdir", name, fmt.Errorf("is not a directory")}
 	}
 	return dirs, nil
 }

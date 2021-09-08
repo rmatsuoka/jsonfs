@@ -21,8 +21,9 @@ func (info *FileInfo) Size() int64 {
 
 func (info *FileInfo) Mode() fs.FileMode {
 	const rdonly = 0444
+	const exonly = 0111
 	if info.isDir {
-		return rdonly | fs.ModeDir
+		return rdonly | exonly | fs.ModeDir
 	}
 	return rdonly
 }
