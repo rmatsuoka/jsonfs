@@ -61,7 +61,7 @@ func (fsys *FS) Open(name string) (fs.File, error) {
 	if err != nil {
 		return nil, &fs.PathError{"open", name, err}
 	}
-	return fs.File(&File{
+	return fs.File(&file{
 		value:  value,
 		reader: nil,
 		path:   name}), nil
@@ -94,7 +94,7 @@ func (fsys *FS) ReadDir(name string) ([]fs.DirEntry, error) {
 		dirs = make([]fs.DirEntry, len(vv))
 		for i, v := range vv {
 			base := strconv.Itoa(i)
-			dirs[i] = fs.DirEntry(&FileInfo{
+			dirs[i] = fs.DirEntry(&fileInfo{
 				isDir: isDir(v),
 				path:  join(name, base)})
 		}
@@ -106,7 +106,7 @@ func (fsys *FS) ReadDir(name string) ([]fs.DirEntry, error) {
 		}
 		sort.Strings(bases)
 		for i, base := range bases {
-			dirs[i] = fs.DirEntry(&FileInfo{
+			dirs[i] = fs.DirEntry(&fileInfo{
 				isDir: isDir(vv[base]),
 				path:  join(name, base)})
 		}

@@ -6,21 +6,21 @@ import (
 	"time"
 )
 
-type FileInfo struct {
+type fileInfo struct {
 	isDir bool
 	path  string
 	size  int64
 }
 
-func (info *FileInfo) Name() string {
+func (info *fileInfo) Name() string {
 	return pathpkg.Base(info.path)
 }
 
-func (info *FileInfo) Size() int64 {
+func (info *fileInfo) Size() int64 {
 	return info.size
 }
 
-func (info *FileInfo) Mode() fs.FileMode {
+func (info *fileInfo) Mode() fs.FileMode {
 	const rdonly = 0444
 	const exonly = 0111
 	if info.isDir {
@@ -29,25 +29,25 @@ func (info *FileInfo) Mode() fs.FileMode {
 	return rdonly
 }
 
-func (info *FileInfo) Type() fs.FileMode {
+func (info *fileInfo) Type() fs.FileMode {
 	if info.isDir {
 		return fs.ModeDir
 	}
 	return 0
 }
 
-func (info *FileInfo) ModTime() time.Time {
+func (info *fileInfo) ModTime() time.Time {
 	return time.Time{}
 }
 
-func (info *FileInfo) IsDir() bool {
+func (info *fileInfo) IsDir() bool {
 	return info.isDir
 }
 
-func (info *FileInfo) Info() (fs.FileInfo, error) {
+func (info *fileInfo) Info() (fs.FileInfo, error) {
 	return fs.FileInfo(info), nil
 }
 
-func (info *FileInfo) Sys() interface{} {
+func (info *fileInfo) Sys() interface{} {
 	return nil
 }
