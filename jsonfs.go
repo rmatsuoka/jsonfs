@@ -21,13 +21,13 @@ func NewFS(data []byte) (*FS, error) {
 	return &FS{value}, nil
 }
 
-func (fsys *FS) namev(name string) (string, interface{}, error) {
+func (fsys *FS) namev(name string) (interface{}, error) {
 	if !fs.ValidPath(name) {
-		return "", nil, fs.ErrInvalid
+		return nil, fs.ErrInvalid
 	}
 
 	if name == "." {
-		return name, fsys.value, nil
+		return fsys.value, nil
 	}
 
 	var base string
@@ -40,32 +40,30 @@ func (fsys *FS) namev(name string) (string, interface{}, error) {
 		case []interface{}:
 			u, err := strconv.ParseUint(base, 10, 0)
 			if int(u) >= len(vv) || err != nil {
-				return "", nil, fs.ErrNotExist
+				return nil, fs.ErrNotExist
 			}
 			value = vv[u]
 		case map[string]interface{}:
 			var ok bool
 			if value, ok = vv[base]; !ok {
-				return "", nil, fs.ErrNotExist
+				return nil, fs.ErrNotExist
 			}
 		default:
-			return "", nil, fs.ErrNotExist
+			return nil, fs.ErrNotExist
 		}
 		elems = elems[1:]
 	}
-	return base, value, nil
+	return value, nil
 }
 
 func (fsys *FS) Open(name string) (fs.File, error) {
-	base, value, err := fsys.namev(name)
+	value, err := fsys.namev(name)
 	if err != nil {
 		return nil, &fs.PathError{"open", name, err}
 	}
 	return fs.File(&File{
-		name:   base,
 		value:  value,
 		reader: nil,
-		rootFS: fsys,
 		path:   name}), nil
 }
 
@@ -85,7 +83,7 @@ func join(dir, base string) string {
 }
 
 func (fsys *FS) ReadDir(name string) ([]fs.DirEntry, error) {
-	_, value, err := fsys.namev(name)
+	value, err := fsys.namev(name)
 	if err != nil {
 		return nil, &fs.PathError{"readdir", name, err}
 	}
@@ -96,23 +94,21 @@ func (fsys *FS) ReadDir(name string) ([]fs.DirEntry, error) {
 		dirs = make([]fs.DirEntry, len(vv))
 		for i, v := range vv {
 			base := strconv.Itoa(i)
-			dirs[i] = fs.DirEntry(&DirEntry{
-				info:   &FileInfo{name: base, isDir: isDir(v)},
-				rootFS: fsys,
-				path:   join(name, base)})
+			dirs[i] = fs.DirEntry(&FileInfo{
+				isDir: isDir(v),
+				path:  join(name, base)})
 		}
 	case map[string]interface{}:
 		dirs = make([]fs.DirEntry, len(vv))
-		names := make([]string, 0, len(vv))
+		bases := make([]string, 0, len(vv))
 		for n := range vv {
-			names = append(names, n)
+			bases = append(bases, n)
 		}
-		sort.Strings(names)
-		for i, base := range names {
-			dirs[i] = fs.DirEntry(&DirEntry{
-				info:   &FileInfo{name: base, isDir: isDir(vv[base])},
-				rootFS: fsys,
-				path:   join(name, base)})
+		sort.Strings(bases)
+		for i, base := range bases {
+			dirs[i] = fs.DirEntry(&FileInfo{
+				isDir: isDir(vv[base]),
+				path:  join(name, base)})
 		}
 	default:
 		return nil, &fs.PathError{"readdir", name, fmt.Errorf("is not a directory")}

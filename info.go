@@ -2,17 +2,18 @@ package jsonfs
 
 import (
 	"io/fs"
+	pathpkg "path"
 	"time"
 )
 
 type FileInfo struct {
-	name  string
-	size  int64
 	isDir bool
+	path  string
+	size  int64
 }
 
 func (info *FileInfo) Name() string {
-	return info.name
+	return pathpkg.Base(info.path)
 }
 
 func (info *FileInfo) Size() int64 {
@@ -28,12 +29,23 @@ func (info *FileInfo) Mode() fs.FileMode {
 	return rdonly
 }
 
+func (info *FileInfo) Type() fs.FileMode {
+	if info.isDir {
+		return fs.ModeDir
+	}
+	return 0
+}
+
 func (info *FileInfo) ModTime() time.Time {
-	return *new(time.Time)
+	return time.Time{}
 }
 
 func (info *FileInfo) IsDir() bool {
 	return info.isDir
+}
+
+func (info *FileInfo) Info() (fs.FileInfo, error) {
+	return fs.FileInfo(info), nil
 }
 
 func (info *FileInfo) Sys() interface{} {

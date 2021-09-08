@@ -7,19 +7,15 @@ import (
 )
 
 type File struct {
-	name   string
-	value  interface{}
-	reader *strings.Reader
-	rootFS *FS
 	path   string
+	reader *strings.Reader
+	value  interface{}
 }
 
 func (f *File) Stat() (fs.FileInfo, error) {
-	// check existance
-	if _, _, err := f.rootFS.namev(f.path); err != nil {
-		return nil, err
-	}
-	return fs.FileInfo(&FileInfo{name: f.name, isDir: isDir(f.value)}), nil
+	return fs.FileInfo(&FileInfo{
+		isDir: isDir(f.value),
+		path:  f.path}), nil
 }
 
 func (f *File) Read(b []byte) (n int, err error) {
